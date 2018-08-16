@@ -1520,7 +1520,124 @@ documentation.</p>
 <p>Successful orders will result in a transaction decreasing your account balance
 for the currency of the market. Failed orders will not cost you anything.</p>
 
-<h2 id="refunds">Refunds</h2>
+<h2 id="cases">Cases</h2>
+
+<p>In some cases, a Managed Account order might initially succeed (and thus charge
+your account) but later need to be reversed. For example, your buyer might want
+to return the product, or the order may be cancelled by the Amazon seller.</p>
+
+<p>Cases are automatically opened by Zinc when an order is cancelled, a return is
+requested, and for other scenarios. You can also open a Case to ask for
+assistance with a failed return, cancellation, and other issues. Cases are
+regularly updated by Zinc with information about the status of the case. </p>
+
+<h3 id="checking-the-status-of-a-case">Checking the status of a Case</h3>
+
+<p>Make a GET request to the case endpoint</p>
+
+<blockquote>
+<p>Check Case status
+<code class="prettyprint">shell
+curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
+  -u &lt;client_token&gt;:
+</code></p>
+</blockquote>
+
+<p><code class="prettyprint">state</code> will be one of the following values:
+Case State | Description
+&mdash;&ndash; | &mdash;&mdash;&mdash;&ndash;
+(null) | No case has been opened for this order.
+open | A case has been opened for this order.
+closed | A case has been closed for this order.</p>
+
+<p><code class="prettyprint">messages</code> contains the entire history of a case, and can have any of these values for <code class="prettyprint">type</code>:
+Message Type | Description
+&mdash;&ndash; | &mdash;&mdash;&mdash;&ndash;
+case.opened.return.request_label | A case has been opened for a return label
+case.opened.nondelivery.not_delivered | A case has been opened for a non-delivery issue
+case.opened.nondelivery.damaged | A case has been opened for a damaged package
+case.opened.nondelivery.empty_box | A case has been opened for an empty box
+case.opened.tracking.request_update | A case has been opened requesting an update on an order status
+case.opened.cancel.forced_cancellation | A case has been opened for an order force cancelled by the source
+case.opened.other | A catch-all category for a case
+case.freetext | A generic, free text case response
+case.return.label_generated | A return label has been generated
+case.return.status_updated | The case status has been updated
+case.refund.partial | The case has resulted in a partial refund being issued
+case.refund.full | The case has resulted in a full refund being issued
+case.closed | The case has been closed</p>
+
+<p>The most up to date case status is represented by the latest object in the <code class="prettyprint">messages</code> list.</p>
+
+<h3 id="opening-a-case">Opening a Case</h3>
+
+<p>Make a POST request to the case endpoint</p>
+
+<blockquote>
+<p>Create a new Case
+<code class="prettyprint">shell
+curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
+  -X POST \
+  -u &lt;client_token&gt;: \
+  -H &#39;Content-type: application/json&#39; \
+  -d &#39;{&quot;reason&quot;: &quot;return.request_label&quot;, &quot;message&quot;: &quot;I need a return label&quot;}&#39;
+</code></p>
+</blockquote>
+
+<p>To open a case you must use one of the following values for <code class="prettyprint">reason</code>:</p>
+
+<table><thead>
+<tr>
+<th>Reason</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>return.request_label</td>
+<td>Request a return label</td>
+</tr>
+<tr>
+<td>nondelivery.not_delivered</td>
+<td>Package never delivered</td>
+</tr>
+<tr>
+<td>nondelivery.damaged</td>
+<td>Item or package damaged</td>
+</tr>
+<tr>
+<td>nondelivery.empty_box</td>
+<td>Empty box delivered</td>
+</tr>
+<tr>
+<td>tracking.request_update</td>
+<td>Request update</td>
+</tr>
+<tr>
+<td>cancel.forced_cancellation</td>
+<td>Forced cancellation by seller</td>
+</tr>
+<tr>
+<td>other</td>
+<td>Other</td>
+</tr>
+</tbody></table>
+
+<h3 id="updating-a-case">Updating a Case</h3>
+
+<p>You can append a freetext <code class="prettyprint">message</code> to a Case by POSTing a <code class="prettyprint">message</code> without a <code class="prettyprint">reason</code>:</p>
+
+<blockquote>
+<p>Update a Case
+<code class="prettyprint">shell
+curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
+  -X POST \
+  -u &lt;client_token&gt;: \
+  -H &#39;Content-type: application/json&#39; \
+  -d &#39;{&quot;message&quot;: &quot;I have an update on this case&quot;}&#39;
+</code></p>
+</blockquote>
+
+<h2 id="refunds-deprecated">Refunds [DEPRECATED]</h2>
 
 <p>In some cases, a Managed Account order might initially succeed (and thus charge
 your account) but later need to be reversed. For example, your buyer might want
@@ -1535,7 +1652,7 @@ the Zinc API is delivered back to Amazon, we&rsquo;ll automatically start the re
 process for your account. In other cases, you&rsquo;ll need to request a refund
 manually.</p>
 
-<h3 id="checking-refund-status">Checking refund status</h3>
+<h3 id="checking-refund-status-deprecated">Checking refund status [DEPRECATED]</h3>
 
 <p>Make a GET request to the refund endpoint.</p>
 
@@ -1572,7 +1689,7 @@ manually.</p>
 </tr>
 </tbody></table>
 
-<h3 id="requesting-a-refund-manually">Requesting a refund manually</h3>
+<h3 id="requesting-a-refund-manually-deprecated">Requesting a refund manually [DEPRECATED]</h3>
 
 <p>Make a POST request to the refund endpoint.</p>
 
@@ -2666,6 +2783,18 @@ accounts).</li>
 
 <ul>
 <li>We will retry POSTing the webhook until you return a 200 status code, so make sure you are returning a 200 at your webhook endpoint.</li>
+</ul>
+
+<h3 id="the-product-details-product-offers-api-is-taking-a-long-time-to-respond-how-do-i-speed-it-up">The Product Details/Product Offers API is taking a long time to respond. How do I speed it up?</h3>
+
+<ul>
+<li><p>Our API is optimized for throughput, not latency, and we don&rsquo;t make any latency guarantees. If you want to do a real-time call (your users wait on the results of the call) it&rsquo;s best to try these things:</p>
+
+<ul>
+<li>If your users are using a limited number of products, cache the data on your end regularly, and then display it to them from your cache in real-time when they request it.</li>
+<li>Make sure you have set the <a href="https://docs.zincapi.com/#product-details">max_age</a> parameter to the maximum value that&rsquo;s allowable for your needs.</li>
+<li>We have other techniques for speeding up the API&ndash;contact us for more details.</li>
+</ul></li>
 </ul>
 
       </div>
