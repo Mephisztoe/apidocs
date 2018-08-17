@@ -1536,36 +1536,95 @@ regularly updated by Zinc with information about the status of the case. </p>
 <p>Make a GET request to the case endpoint</p>
 
 <blockquote>
-<p>Check Case status
-<code class="prettyprint">shell
-curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
-  -u &lt;client_token&gt;:
-</code></p>
+<p>Check Case status</p>
 </blockquote>
+<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders/&lt;order_id&gt;/case"</span> <span class="se">\</span>
+  -u &lt;client_token&gt;:
+</code></pre>
 
-<p><code class="prettyprint">state</code> will be one of the following values:
-Case State | Description
-&mdash;&ndash; | &mdash;&mdash;&mdash;&ndash;
-(null) | No case has been opened for this order.
-open | A case has been opened for this order.
-closed | A case has been closed for this order.</p>
+<p><code class="prettyprint">state</code> will be one of the following values:</p>
 
-<p><code class="prettyprint">messages</code> contains the entire history of a case, and can have any of these values for <code class="prettyprint">type</code>:
-Message Type | Description
-&mdash;&ndash; | &mdash;&mdash;&mdash;&ndash;
-case.opened.return.request_label | A case has been opened for a return label
-case.opened.nondelivery.not_delivered | A case has been opened for a non-delivery issue
-case.opened.nondelivery.damaged | A case has been opened for a damaged package
-case.opened.nondelivery.empty_box | A case has been opened for an empty box
-case.opened.tracking.request_update | A case has been opened requesting an update on an order status
-case.opened.cancel.forced_cancellation | A case has been opened for an order force cancelled by the source
-case.opened.other | A catch-all category for a case
-case.freetext | A generic, free text case response
-case.return.label_generated | A return label has been generated
-case.return.status_updated | The case status has been updated
-case.refund.partial | The case has resulted in a partial refund being issued
-case.refund.full | The case has resulted in a full refund being issued
-case.closed | The case has been closed</p>
+<table><thead>
+<tr>
+<th>Case State</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>(null)</td>
+<td>No case has been opened for this order.</td>
+</tr>
+<tr>
+<td>open</td>
+<td>A case has been opened for this order.</td>
+</tr>
+<tr>
+<td>closed</td>
+<td>A case has been closed for this order.</td>
+</tr>
+</tbody></table>
+
+<p><code class="prettyprint">messages</code> contains the entire history of a case, and can have any of these values for <code class="prettyprint">type</code>:</p>
+
+<table><thead>
+<tr>
+<th>Message Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>case.opened.return.request_label</td>
+<td>A case has been opened for a return label</td>
+</tr>
+<tr>
+<td>case.opened.nondelivery.not_delivered</td>
+<td>A case has been opened for a non-delivery issue</td>
+</tr>
+<tr>
+<td>case.opened.nondelivery.damaged</td>
+<td>A case has been opened for a damaged package</td>
+</tr>
+<tr>
+<td>case.opened.nondelivery.empty_box</td>
+<td>A case has been opened for an empty box</td>
+</tr>
+<tr>
+<td>case.opened.tracking.request_update</td>
+<td>A case has been opened requesting an update on an order status</td>
+</tr>
+<tr>
+<td>case.opened.cancel.forced_cancellation</td>
+<td>A case has been opened for an order force cancelled by the source</td>
+</tr>
+<tr>
+<td>case.opened.other</td>
+<td>A catch-all category for a case</td>
+</tr>
+<tr>
+<td>case.freetext</td>
+<td>A generic, free text case response</td>
+</tr>
+<tr>
+<td>case.return.label_generated</td>
+<td>A return label has been generated</td>
+</tr>
+<tr>
+<td>case.return.status_updated</td>
+<td>The case status has been updated</td>
+</tr>
+<tr>
+<td>case.refund.partial</td>
+<td>The case has resulted in a partial refund being issued</td>
+</tr>
+<tr>
+<td>case.refund.full</td>
+<td>The case has resulted in a full refund being issued</td>
+</tr>
+<tr>
+<td>case.closed</td>
+<td>The case has been closed</td>
+</tr>
+</tbody></table>
 
 <p>The most up to date case status is represented by the latest object in the <code class="prettyprint">messages</code> list.</p>
 
@@ -1574,15 +1633,14 @@ case.closed | The case has been closed</p>
 <p>Make a POST request to the case endpoint</p>
 
 <blockquote>
-<p>Create a new Case
-<code class="prettyprint">shell
-curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
-  -X POST \
-  -u &lt;client_token&gt;: \
-  -H &#39;Content-type: application/json&#39; \
-  -d &#39;{&quot;reason&quot;: &quot;return.request_label&quot;, &quot;message&quot;: &quot;I need a return label&quot;}&#39;
-</code></p>
+<p>Create a new Case</p>
 </blockquote>
+<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders/&lt;order_id&gt;/case"</span> <span class="se">\</span>
+  -X POST <span class="se">\</span>
+  -u &lt;client_token&gt;: <span class="se">\</span>
+  -H <span class="s1">'Content-type: application/json'</span> <span class="se">\</span>
+  -d <span class="s1">'{"reason": "return.request_label", "message": "I need a return label"}'</span>
+</code></pre>
 
 <p>To open a case you must use one of the following values for <code class="prettyprint">reason</code>:</p>
 
@@ -1627,15 +1685,14 @@ curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
 <p>You can append a freetext <code class="prettyprint">message</code> to a Case by POSTing a <code class="prettyprint">message</code> without a <code class="prettyprint">reason</code>:</p>
 
 <blockquote>
-<p>Update a Case
-<code class="prettyprint">shell
-curl &quot;https://api.zinc.io/v1/orders/&lt;order_id&gt;/case&quot; \
-  -X POST \
-  -u &lt;client_token&gt;: \
-  -H &#39;Content-type: application/json&#39; \
-  -d &#39;{&quot;message&quot;: &quot;I have an update on this case&quot;}&#39;
-</code></p>
+<p>Update a Case</p>
 </blockquote>
+<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders/&lt;order_id&gt;/case"</span> <span class="se">\</span>
+  -X POST <span class="se">\</span>
+  -u &lt;client_token&gt;: <span class="se">\</span>
+  -H <span class="s1">'Content-type: application/json'</span> <span class="se">\</span>
+  -d <span class="s1">'{"message": "I have an update on this case"}'</span>
+</code></pre>
 
 <h2 id="refunds-deprecated">Refunds [DEPRECATED]</h2>
 
