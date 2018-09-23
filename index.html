@@ -1491,7 +1491,7 @@ does not exist.</p>
 
 <h1 id="realtime-product-data">Realtime Product Data</h1>
 
-<p>The calls documented above are tuned for throughput rather than latency and for most use cases they work well. There are some use cases (exp catalog expansion) that have strict latency requirements. To satisfy those use cases we have developed a realtime version of or data calls. To ensure we meet our latency guarantees, we limit access to the realtime api. To get access to our realtime api contact <a href="mailto:sales@zinc.io">sales@zinc.io</a>.</p>
+<p>The calls documented above are tuned for throughput rather than latency and for most use cases they work well. There are some use cases (for example, catalog expansion) that have strict latency requirements. To satisfy those use cases we have developed a realtime version of our data calls. To ensure we meet our latency guarantees, we limit access to the realtime api. To get access to our realtime api contact <a href="mailto:sales@zinc.io">sales@zinc.io</a>.</p>
 
 <h2 id="realtime-search">Realtime Search</h2>
 
@@ -1612,7 +1612,7 @@ does not exist.</p>
 
 <p><code class="prettyprint">https://api.zinc.io/v1/realtime/search?query=&lt;query&gt;&amp;retailer=&lt;retailer_name&gt;&amp;nextToken=&lt;token&gt;</code></p>
 
-<p>The first page should always return within 4 seconds and will contain 10 results. If you want to show more than 10 results, you should AJAX in additional pages so the user&rsquo;s experience is good. A demo of this can be found at <a href="http://amazonsearchdemo.surge.sh/">http://amazonsearchdemo.surge.sh/</a> (<a href="https://github.com/zincio/zinc-realtime-search-demo">source code</a>).</p>
+<p>The first page should always return within 4 seconds and will contain 10 results. If you want to show more than 10 results, you should use AJAX to load additional pages for the best user experience. A demo of this can be found at <a href="http://amazonsearchdemo.surge.sh/">http://amazonsearchdemo.surge.sh/</a> (<a href="https://github.com/zincio/zinc-realtime-search-demo">source code</a>).</p>
 
 <h3 id="required-request-attributes">Required request attributes</h3>
 
@@ -1706,7 +1706,7 @@ does not exist.</p>
 
 <p>Using the realtime details call is identical to our <a href="#product-details">normal details call</a> with the exception that <code class="prettyprint">max_age</code> is ignored.</p>
 
-<p>If a realtime details call hits our cache the call does not count against your rate limit.</p>
+<p>If a realtime details call hits our cache, the call does not count against your real-time rate limit.</p>
 
 <h2 id="realtime-offers">Realtime Offers</h2>
 
