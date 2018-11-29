@@ -57,6 +57,8 @@
 
 <p>Zinc lets you buy things from popular online retailers, including Amazon.com, with  a single POST request. Zinc also lets you get prices and descriptive information about products from supported retailers.</p>
 
+<p>The Zinc API is organized around REST. Our API has predictable, resource-oriented URLs.</p>
+
 <h3 id="quick-start">Quick start</h3>
 
 <ol>
@@ -64,9 +66,43 @@
 <li>Follow the instructions in the <a href="#create-an-order">create an order</a> section from the documentation below to place your first order.</li>
 </ol>
 
-<h1 id="supported-retailers">Supported retailers</h1>
+          <h1 id="authentication">Authentication</h1>
 
-<p>The table below shows the endpoints available for each retailer. We can add additional retailers upon request &ndash; fill out the form at the <a href="https://zinc.io/#contact">bottom of our home page</a> for a quote for a particular retailer.</p>
+<blockquote>
+<p>Example authentication request</p>
+</blockquote>
+<pre class="highlight shell"><code>curl https://api.zinc.io/v1/orders <span class="se">\</span>
+  -u &lt;client_token&gt;:
+</code></pre>
+
+<p>You can authenticate your account by including your client token in your request. Authentication is performed through HTTP Basic Auth, where the client token is the basic auth username value. You do not need to provide a password.</p>
+
+<p>Make sure that you don&rsquo;t share your client token and that you keep it away from publicly accessible areas such as Github, client-side code, etc. Client tokens are tied to your account, so you will be charged for any orders or requests made with your client token. If you believe your client token has been compromised, please contact support@zinc.io immediately.</p>
+
+          <h1 id="idempotency-keys">Idempotency Keys</h1>
+
+<blockquote>
+<p>Example idempontency key request</p>
+</blockquote>
+<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders"</span> <span class="se">\</span>
+  -u &lt;client_token&gt;: <span class="se">\</span>
+  -d <span class="s1">'{
+  "idempotency_key": &lt;idempotency_key&gt;,
+  "retailer": "amazon",
+  "max_price": 2300,
+  ...
+  }'</span>
+</code></pre>
+
+<p>The Zinc API does not provide out of the box deduplication of orders. Each time you send a new order request, the Zinc API will attempt to place a new order. However, the API supports idempotency for safely retrying requests without accidentally performing the same operation twice. For example, if an order request fails due to a network connection error, you can retry the request with the same idempotency key to guarantee that only a single order is created.</p>
+
+<p>To perform an idempotent request, attach a unique key to request body of any POST request with the parameter <code class="prettyprint">&quot;idempotency_key&quot;: &lt;idempotency_key&gt;</code>. How you create unique keys is completely up to you. We suggest using random strings or UUIDs. We&rsquo;ll always send back the same response for requests made with the same key. If you receive an error on a request, you can retry by sending another request with a different idempotency key. Once you receive an error or success response, the order will no longer change.</p>
+
+<p>Idempotency keys are <strong>strongly</strong> recommended. In the unlikely event that an API request returns a 5XX status code, duplicate requests could occur if you reattempt the request. We can&rsquo;t be sure of the state of the request when we return a 5XX status code, so it&rsquo;s best to attempt requests with an idempotency key. If you aren&rsquo;t using an idempotency key and you retry orders with a 5XX error code, Zinc will not refund you for duplicate orders.</p>
+
+          <h1 id="supported-retailers">Supported retailers</h1>
+
+<p>The table below shows the endpoints available for each retailer. We can add additional retailers upon request. Fill out the form at the <a href="https://zinc.io/#contact">bottom of our home page</a> for a quote for a particular retailer.</p>
 
 <table><thead>
 <tr>
@@ -74,7 +110,7 @@
 <th>Retailer Code</th>
 <th>Orders</th>
 <th>Product Details</th>
-<th>Product Prices</th>
+<th>Product Offers</th>
 <th>Product Search</th>
 </tr>
 </thead><tbody>
@@ -163,40 +199,6 @@
 <p><code class="prettyprint">*</code>Currently in unsupported beta.
 <code class="prettyprint">†</code>Prime Pantry Items, Kindles, Alexa Products, and Digital items(eBooks and Digital movies) are not supported</p>
 
-          <h1 id="authentication">Authentication</h1>
-
-<blockquote>
-<p>Example authentication request</p>
-</blockquote>
-<pre class="highlight shell"><code>curl https://api.zinc.io/v1/orders <span class="se">\</span>
-  -u &lt;client_token&gt;:
-</code></pre>
-
-<p>You can authenticate your account by including your client token in your request. Authentication is performed through HTTP Basic Auth, where the client token is the basic auth username value. You do not need to provide a password.</p>
-
-<p>Make sure that you don&rsquo;t share your client token and that you keep it away from publicly accessible areas such as Github, client-side code, etc. Client tokens are tied to your account, so you will be charged for any orders or requests made with your client token. If you believe your client token has been compromised, please contact support@zinc.io immediately.</p>
-
-          <h1 id="idempotency-keys">Idempotency Keys</h1>
-
-<blockquote>
-<p>Example idempontency key request</p>
-</blockquote>
-<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders"</span> <span class="se">\</span>
-  -u &lt;client_token&gt;: <span class="se">\</span>
-  -d <span class="s1">'{
-  "idempotency_key": &lt;idempotency_key&gt;,
-  "retailer": "amazon",
-  "max_price": 2300,
-  ...
-  }'</span>
-</code></pre>
-
-<p>The Zinc API does not provide out of the box deduplication of orders. Each time you send a new order request, the Zinc API will attempt to place a new order. However, the API supports idempotency for safely retrying requests without accidentally performing the same operation twice. For example, if an order request fails due to a network connection error, you can retry the request with the same idempotency key to guarantee that only a single order is created.</p>
-
-<p>To perform an idempotent request, attach a unique key to request body of any POST request with the parameter <code class="prettyprint">&quot;idempotency_key&quot;: &lt;idempotency_key&gt;</code>. How you create unique keys is completely up to you. We suggest using random strings or UUIDs. We&rsquo;ll always send back the same response for requests made with the same key. If you receive an error on a request, you can retry by sending another request with a different idempotency key. Once you receive an error or success response, the order will no longer change.</p>
-
-<p>Idempotency keys are STRONGLY recommended. In the unlikely event that an API request returns a 5XX status code, duplicate requests could occur if you reattempt the request. We can&rsquo;t be sure of the state of the request when we return a 5XX status code, so it&rsquo;s best to attempt requests with an idempotency key. If you aren&rsquo;t using an idempotency key and you retry orders with a 5XX error code, Zinc will not refund you for duplicate orders.</p>
-
           <h1 id="orders">Orders</h1>
 
 <h2 id="create-an-order">Create an order</h2>
@@ -277,7 +279,9 @@
 <span class="o">}</span>
 </code></pre>
 
-<p>Zinc offers an API for apps that need real-time order placing capabilities. With a single POST request, you can order an item from one of our supported retailers. Making an order request will start an order. You&rsquo;ll receive a <code class="prettyprint">request_id</code> in the POST body&rsquo;s response which you&rsquo;ll then use for <a href="#retrieving-an-order">retrieving the status of the order</a>.</p>
+<p>Zinc offers an API for apps that need real-time order placing capabilities. With a single POST request, you can order an item from one of our supported retailers. Making an order request will start an order. You&rsquo;ll receive a <code class="prettyprint">request_id</code> in the POST body&rsquo;s response which you&rsquo;ll then use for <a href="#retrieving-an-order">retrieving the status of the order</a>. The following illustration shows the flow for a typical order.</p>
+
+<p><center><img alt="flow chart for making an order" src="images/ordering-flow.svg" /></center></p>
 
 <h3 id="required-attributes">Required attributes</h3>
 
@@ -375,9 +379,9 @@
 <td>(Amazon business accounts only). Adds a purchase order number to the order.</td>
 </tr>
 <tr>
-<td>bundled</td>
-<td>Boolean</td>
-<td>(Amazon only). If enabled, orders will be grouped together into batches and placed together. See the <a href="#order-bundling">order bundling</a> section for more details.</td>
+<td>affiliate_info</td>
+<td>Object</td>
+<td>(Amazon only) Add an Amazon affiliate tag to your order. Example value <code class="prettyprint">{&quot;tag&quot;: &quot;yourtag-20&quot;}</code></td>
 </tr>
 </tbody></table>
 
@@ -488,28 +492,6 @@
 
 <p>You may also use the <a href="#shipping-object">shipping parameter</a> on an order to select a shipping option once a product has been selected. Instead of filtering by the different offers, like the seller selection criteria, the <code class="prettyprint">shipping</code> parameter will choose the shipping speed on the selected offer. This is useful for ensuring the product will arrive by a specific day. For example, if you set <code class="prettyprint">&quot;max_days&quot;: 5</code> on the <code class="prettyprint">shipping</code> parameter, the Zinc API would attempt to select the cheapest shipping method that took less than 5 days to arrive. Thus, if there was a shipping method that took 3 days and cost $10 and another shipping method that took 7 days but cost $2, the first shipping option would be selected.</p>
 
-<h2 id="order-bundling">Order bundling</h2>
-
-<p>The bundling feature groups orders together before placing them. This is often advantageous on retailers where larger orders are given free shipping. To use bundling, you only need to specify <code class="prettyprint">bundled: true</code> when placing an order request. Bundling currently only works on the following retailers: <code class="prettyprint">amazon</code>, <code class="prettyprint">amazon_uk</code>.</p>
-
-<p>The bundling feature allows you to take advantage of free shipping over $50 (on Amazon) without having to change your Zinc integration. Bundling will take the shipping addresses, products, and quantities from separate orders and will group them together into a single order, making sure that each product is routed correctly. The order requests and responses remain exactly the same. The only difference is when the order is placed. The order bundling feature will wait for enough orders in the queue before launching a bundled order. The exact dynamics are as follows:</p>
-
-<ol>
-<li>The order bundler will wait until $55 in products have been purchased. As soon as more than $55 of products have been queued with <code class="prettyprint">bundled: true</code>, the bundler will launch a new order.</li>
-<li>If the order bundler has waited for longer than 6 hours and has not yet obtained $55 in products, it will launch an order with whatever products are currently in the queue.</li>
-</ol>
-
-<p>Note that the order bundler will not group together two orders which have the same product ids.</p>
-
-<h2 id="amazon-email-verification">Amazon Email Verification</h2>
-
-<p>Amazon occasionally requires additional verification of account ownership by
-emailing you a code to enter during login. If this happens during an order, you
-will receive an <code class="prettyprint">account_locked_verification_required</code> error. In this case,
-please check the email associated with the account and obtain the verification
-code. Then resubmit your order and supply the code as <code class="prettyprint">verification_code</code> under
-the <code class="prettyprint">retailer_credentials</code> object. Another option is to enable Two Factor Authentication on your account and supply the &#39;totp_2fa_key&rsquo; with every order, which will skip Amazon email verification, for more detail review the info on <a href="#retailer-credentials-object">&#39;retailer_credentials&rsquo;</a> </p>
-
 <h2 id="aborting-an-order">Aborting an order</h2>
 
 <blockquote>
@@ -570,21 +552,16 @@ behavior if the order abort fails.</p>
 <p>Note that abortion is best effort, so we cannot guaranteed that you will be
 able to abort a request.</p>
 
-<h2 id="adding-an-amazon-affiliate-tag">Adding an Amazon Affiliate Tag</h2>
+<h2 id="amazon-email-verification">Amazon email verification</h2>
 
-<blockquote>
-<p>Example Affiliate Tag Snippet</p>
-</blockquote>
-<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders"</span> <span class="se">\</span>
-  -u &lt;client_token&gt;: <span class="se">\</span>
-  -d <span class="s1">'{
-  "retailer": "amazon",
-  "affiliate_info": {"tag": "yourtag-20"},
-  ...
-  }
-</span></code></pre>
+<p>Occasionally, Amazon requires verification of account ownership and will email you a code during login.
+If this happens during an order, you will receive an <code class="prettyprint">account_locked_verification_required</code> error.
+There are a few options for resolving this issue.</p>
 
-<p>The API allows you to add an Amazon Affiliate tag if you so desire. However, Zinc doesn&rsquo;t recommend using the affiliate tag due to the high risk of your affiliate account being closed when a large number of orders are coming from a particular purchasing account.</p>
+<ul>
+<li>Check the email associated with the account and obtain the verification code. Then resubmit your order and supply the code as <code class="prettyprint">verification_code</code> under the <a href="#retailer-credentials-object"><code class="prettyprint">retailer_credentials</code></a> object.</li>
+<li>Enable Two Factor Authentication on your account and supply the <code class="prettyprint">totp_2fa_key</code> with every order under the <a href="#retailer-credentials-object"><code class="prettyprint">retailer_credentials</code></a> object.</li>
+</ul>
 
           <h1 id="cancellations">Cancellations</h1>
 
@@ -914,7 +891,11 @@ in progress, you&rsquo;ll get the status back with the error. If the return
 is not yet started, we&rsquo;ll be unable to start a return because the method code
 does not exist.</p>
 
-          <h1 id="product-details">Product Details</h1>
+          <h1 id="product-data">Product Data</h1>
+
+<p>Zinc can get product details, product offers and search supported retailers. In general, these calls are tuned for throughput rather than latency. If you need responses quickly, we have <a href="#realtime-product-data">realtime versions</a> of each call. Also, proper use of the optional <code class="prettyprint">max_age</code> or <code class="prettyprint">newer_than</code> query parameters will improve response times.</p>
+
+<h2 id="product-details">Product Details</h2>
 
 <blockquote>
 <p>Example product details request</p>
@@ -1201,7 +1182,7 @@ does not exist.</p>
 <tr>
 <td>price</td>
 <td>Number</td>
-<td>(Amazon only) The price in cents of the buy box price of the item</td>
+<td>(Amazon only) The price in cents of the buy box price of the item. <br><strong>This is not always returned and is often not the cheapest option. If you want a product&rsquo;s price you should use <a href="https://zinc.io/#product-prices">product offers</a>.</strong></td>
 </tr>
 <tr>
 <td>review_count</td>
@@ -1230,13 +1211,58 @@ does not exist.</p>
 </tr>
 </tbody></table>
 
-<h1 id="product-prices">Product Prices</h1>
+<h2 id="product-offers">Product Offers</h2>
 
 <blockquote>
 <p>Example product offers request</p>
 </blockquote>
 <pre class="highlight shell"><code>curl https://api.zinc.io/v1/products/0923568964/offers?retailer<span class="o">=</span>amazon <span class="se">\</span>
   -u &lt;client_token&gt;:
+</code></pre>
+
+<blockquote>
+<p>Example product offers response</p>
+</blockquote>
+<pre class="highlight shell"><code><span class="o">{</span>
+  <span class="s2">"status"</span>: <span class="s2">"completed"</span>,
+  <span class="s2">"asin"</span>: <span class="s2">"B007JR5304"</span>,
+  <span class="s2">"offers"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"seller"</span>: <span class="o">{</span>
+        <span class="s2">"num_ratings"</span>: null,
+        <span class="s2">"percent_positive"</span>: null,
+        <span class="s2">"first_party"</span>: <span class="nb">false</span>,
+        <span class="s2">"name"</span>: <span class="s2">"Amazon Warehouse"</span>,
+        <span class="s2">"id"</span>: <span class="s2">"A2L77EE7U53NWQ"</span>
+      <span class="o">}</span>,
+      <span class="s2">"marketplace_fulfilled"</span>: <span class="nb">true</span>,
+      <span class="s2">"international"</span>: <span class="nb">false</span>,
+      <span class="s2">"offer_id"</span>: <span class="s2">"eMLzuculxk"</span>,
+      <span class="s2">"available"</span>: <span class="nb">true</span>,
+      <span class="s2">"handling_days"</span>: <span class="o">{</span>
+        <span class="s2">"max"</span>: 0,
+        <span class="s2">"min"</span>: 0
+      <span class="o">}</span>,
+      <span class="s2">"price"</span>: 928,
+      <span class="s2">"prime_only"</span>: <span class="nb">false</span>,
+      <span class="s2">"condition"</span>: <span class="s2">"Used - Very Good"</span>,
+      <span class="s2">"addon"</span>: <span class="nb">false</span>,
+      <span class="s2">"shipping_options"</span>: <span class="o">[</span>
+        <span class="o">{</span>
+          <span class="s2">"price"</span>: 0,
+          <span class="s2">"delivery_days"</span>: <span class="o">{</span>
+            <span class="s2">"max"</span>: 4,
+            <span class="s2">"min"</span>: 4
+          <span class="o">}</span>,
+          <span class="s2">"name"</span>: <span class="s2">"one-day"</span>
+        <span class="o">}</span>
+      <span class="o">]</span>,
+      <span class="s2">"minimum_quantity"</span>: null,
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"timestamp"</span>: 1543523165,
+  <span class="s2">"retailer"</span>: <span class="s2">"amazon"</span>
+<span class="o">}</span>
 </code></pre>
 
 <p>Get information about all the offers for a particular product, including seller name, item price, shipping price, condition, seller reputation, and more.</p>
@@ -1287,33 +1313,6 @@ does not exist.</p>
 </tr>
 </tbody></table>
 
-<blockquote>
-<p>Example product offers response</p>
-</blockquote>
-<pre class="highlight shell"><code><span class="o">{</span>
-  <span class="s2">"retailer"</span>: <span class="s2">"amazon"</span>,
-  <span class="s2">"status"</span>: <span class="s2">"completed"</span>,
-  <span class="s2">"offers"</span>:[
-    <span class="o">{</span>
-      <span class="s2">"addon"</span>: <span class="nb">false</span>,
-      <span class="s2">"condition"</span>: <span class="s2">"New"</span>,
-      <span class="s2">"handling_days_max"</span>: 0,
-      <span class="s2">"handling_days_min"</span>: 0,
-      <span class="s2">"international"</span>: <span class="nb">false</span>,
-      <span class="s2">"merchant_id"</span>: <span class="s2">"ATVPDKIKX0DER"</span>,
-      <span class="s2">"offerlisting_id"</span>: <span class="s2">"lUai8vEbhC%2F2vYZDwaePlc4baWiHzAy9XJncUR%2FpQ9l4VOrs%2FfpYt4ZtreQaB%2BPL1xJwz5OpIc%2BJjyymHg3iv4YkZvWy5z7flil7n7lUDWNPY76YUhMNdw%3D%3D"</span>,
-      <span class="s2">"price"</span>: 9.79,
-      <span class="s2">"ship_price"</span>: 0
-      <span class="s2">"prime"</span>: <span class="nb">true</span>,
-      <span class="s2">"prime_only"</span>: <span class="nb">false</span>,
-      <span class="s2">"seller_name"</span>: <span class="s2">"Amazon.com"</span>,
-      <span class="s2">"seller_num_ratings"</span>: 1000000,
-      <span class="s2">"seller_percent_positive"</span>: 100
-    <span class="o">}</span>
-  <span class="o">]</span>
-<span class="o">}</span>
-</code></pre>
-
 <h3 id="response-attributes">Response attributes</h3>
 
 <table><thead>
@@ -1340,7 +1339,7 @@ does not exist.</p>
 </tr>
 </tbody></table>
 
-<h1 id="product-search">Product Search</h1>
+<h2 id="product-search">Product Search</h2>
 
 <blockquote>
 <p>Example product search request</p>
@@ -1726,7 +1725,7 @@ with Zinc using PayPal or wire transfer, which Zinc will then debit to place ord
 <p>Managed accounts are currently available for Amazon and Amazon UK.</p>
 
 <p>Zinc Managed Accounts are currently available by invite only. Please contact
-sales@zinc.io and mention Managed Accounts. You can also contact this address if
+<a href="mailto:sales@zinc.io">sales@zinc.io</a> and mention Managed Accounts. You can also contact this address if
 you need more information to determine if Managed Accounts are right for you.</p>
 
 <h2 id="funding-your-account">Funding your account</h2>
@@ -1738,7 +1737,7 @@ you need more information to determine if Managed Accounts are right for you.</p
 curl <span class="s2">"https://api.zinc.io/v1/addax/transactions?count=100&amp;offset=0"</span> -u &lt;client_token&gt;:
 </code></pre>
 
-<p>Please contact sales@zinc.io. They&rsquo;ll help set up funding options taylored for
+<p>Please contact <a href="mailto:sales@zinc.io">sales@zinc.io</a>. They&rsquo;ll help set up funding options taylored for
 your needs. Generally, funding is performed either through PayPal&rsquo;s Mass Pay
 option or via wire transfer directly to our bank.</p>
 
@@ -1774,7 +1773,7 @@ to return the product, or the order may be cancelled by the Amazon seller.</p>
 <p>Cases are automatically opened by Zinc when an order is cancelled, a return is
 requested, and for other scenarios. You can also open a Case to ask for
 assistance with a failed return, cancellation, and other issues. Cases are
-regularly updated by Zinc with information about the status of the case. </p>
+regularly updated by Zinc with information about the status of the case.</p>
 
 <h3 id="checking-the-status-of-a-case">Checking the status of a Case</h3>
 
@@ -1938,97 +1937,6 @@ regularly updated by Zinc with information about the status of the case. </p>
   -H <span class="s1">'Content-type: application/json'</span> <span class="se">\</span>
   -d <span class="s1">'{"message": "I have an update on this case"}'</span>
 </code></pre>
-
-<h2 id="refunds-deprecated">Refunds [DEPRECATED]</h2>
-
-<p>In some cases, a Managed Account order might initially succeed (and thus charge
-your account) but later need to be reversed. For example, your buyer might want
-to return the product, or the order may be cancelled by the Amazon seller.</p>
-
-<p>To address these cases, we&rsquo;ve created a refund process. All refunds will be sent
-to Zinc, which we will approve or decline. Any
-declined refunds may be appealed to support@zinc.io.</p>
-
-<p>When there&rsquo;s a successful cancellation (see above) or a return created through
-the Zinc API is delivered back to Amazon, we&rsquo;ll automatically start the refund
-process for your account. In other cases, you&rsquo;ll need to request a refund
-manually.</p>
-
-<h3 id="checking-refund-status-deprecated">Checking refund status [DEPRECATED]</h3>
-
-<p>Make a GET request to the refund endpoint.</p>
-
-<blockquote>
-<p>Check refund status</p>
-</blockquote>
-<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders/&lt;order_id&gt;/refund"</span> <span class="se">\</span>
-  -u &lt;client_token&gt;:
-</code></pre>
-
-<p><code class="prettyprint">refund_state</code> will be one of the following values:</p>
-
-<table><thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>(null)</td>
-<td>No refund has been requested.</td>
-</tr>
-<tr>
-<td>requested</td>
-<td>A refund has been requested. Zinc has 30 days to respond.</td>
-</tr>
-<tr>
-<td>refunded</td>
-<td>A refund has been issued to your account.</td>
-</tr>
-<tr>
-<td>declined</td>
-<td>Zinc has declined the refund request. Please contact support@zinc.io if you need more information.</td>
-</tr>
-</tbody></table>
-
-<h3 id="requesting-a-refund-manually-deprecated">Requesting a refund manually [DEPRECATED]</h3>
-
-<p>Make a POST request to the refund endpoint.</p>
-
-<blockquote>
-<p>Create refund</p>
-</blockquote>
-<pre class="highlight shell"><code>curl <span class="s2">"https://api.zinc.io/v1/orders/&lt;order_id&gt;/refund"</span> <span class="se">\</span>
-  -X POST <span class="se">\</span>
-  -u &lt;client_token&gt;: <span class="se">\</span>
-  -H <span class="s1">'Content-type: application/json'</span> <span class="se">\</span>
-  -d <span class="s1">'{"reason": "refund_reason_code", "note": "Please include as much detail as possible in the note."}'</span>
-</code></pre>
-
-<p>Valid reason codes include:</p>
-
-<table><thead>
-<tr>
-<th>Code</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>attempting_to_cancel</td>
-<td>You attempted to cancel the order, but are unsure if it completed. Zinc will refund if possible and decline if the order actually went through.</td>
-</tr>
-<tr>
-<td>return_completed</td>
-<td>The item was returned, but not using a label that was generated by Zinc.</td>
-</tr>
-<tr>
-<td>other</td>
-<td>Please contact support@zinc.io and explain why you need to use this code.</td>
-</tr>
-</tbody></table>
-
-<p>If none of these reason codes cover your use case, please contact
-support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 
           <h1 id="object-reference">Object reference</h1>
 
@@ -2647,20 +2555,36 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 <p>Example product offer object</p>
 </blockquote>
 <pre class="highlight shell"><code><span class="o">{</span>
-  <span class="s2">"addon"</span>: <span class="nb">false</span>,
-  <span class="s2">"condition"</span>: <span class="s2">"New"</span>,
-  <span class="s2">"handling_days_max"</span>: 0,
-  <span class="s2">"handling_days_min"</span>: 0,
+  <span class="s2">"seller"</span>: <span class="o">{</span>
+    <span class="s2">"num_ratings"</span>: null,
+    <span class="s2">"percent_positive"</span>: null,
+    <span class="s2">"first_party"</span>: <span class="nb">false</span>,
+    <span class="s2">"name"</span>: <span class="s2">"Amazon Warehouse"</span>,
+    <span class="s2">"id"</span>: <span class="s2">"A2L77EE7U53NWQ"</span>
+  <span class="o">}</span>,
+  <span class="s2">"marketplace_fulfilled"</span>: <span class="nb">true</span>,
   <span class="s2">"international"</span>: <span class="nb">false</span>,
-  <span class="s2">"merchant_id"</span>: <span class="s2">"ATVPDKIKX0DER"</span>,
-  <span class="s2">"offerlisting_id"</span>: <span class="s2">"lUai8vEbhC%2F2vYZDwaePlc4baWiHzAy9XJncUR%2FpQ9l4VOrs%2FfpYt4ZtreQaB%2BPL1xJwz5OpIc%2BJjyymHg3iv4YkZvWy5z7flil7n7lUDWNPY76YUhMNdw%3D%3D"</span>,
-  <span class="s2">"price"</span>: 9.79,
-  <span class="s2">"ship_price"</span>: 0
-  <span class="s2">"prime"</span>: <span class="nb">true</span>,
+  <span class="s2">"offer_id"</span>: <span class="s2">"eMLzuculxk%2"</span>,
+  <span class="s2">"available"</span>: <span class="nb">true</span>,
+  <span class="s2">"handling_days"</span>: <span class="o">{</span>
+    <span class="s2">"max"</span>: 0,
+    <span class="s2">"min"</span>: 0
+  <span class="o">}</span>,
+  <span class="s2">"price"</span>: 928,
   <span class="s2">"prime_only"</span>: <span class="nb">false</span>,
-  <span class="s2">"seller_name"</span>: <span class="s2">"Amazon.com"</span>,
-  <span class="s2">"seller_num_ratings"</span>: 1000000,
-  <span class="s2">"seller_percent_positive"</span>: 100
+  <span class="s2">"condition"</span>: <span class="s2">"Used - Very Good"</span>,
+  <span class="s2">"addon"</span>: <span class="nb">false</span>,
+  <span class="s2">"shipping_options"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"price"</span>: 0,
+      <span class="s2">"delivery_days"</span>: <span class="o">{</span>
+        <span class="s2">"max"</span>: 4,
+        <span class="s2">"min"</span>: 4
+      <span class="o">}</span>,
+      <span class="s2">"name"</span>: <span class="s2">"one-day"</span>
+    <span class="o">}</span>
+  <span class="o">]</span>,
+  <span class="s2">"minimum_quantity"</span>: null
 <span class="o">}</span>
 </code></pre>
 
@@ -2682,17 +2606,12 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 <td>The condition of the product. Possible values are <code class="prettyprint">New</code>, <code class="prettyprint">Refurbished</code>, <code class="prettyprint">Used - Like New</code>, <code class="prettyprint">Used - Very Good</code>, <code class="prettyprint">Used - Good</code>, <code class="prettyprint">Used - Acceptable</code>, <code class="prettyprint">Unacceptable</code>.</td>
 </tr>
 <tr>
-<td>greytext</td>
-<td>String</td>
-<td>(Amazon only) The shipping text provided by the seller</td>
-</tr>
-<tr>
-<td>handling_days_max</td>
+<td>handling_days.max</td>
 <td>Number</td>
 <td>The maximum number of days required for shipping and handling</td>
 </tr>
 <tr>
-<td>handling_days_min</td>
+<td>handling_days.min</td>
 <td>Number</td>
 <td>The minimum number of days required for shipping and handling</td>
 </tr>
@@ -2702,34 +2621,59 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 <td>Whether or not the product ships from outside of the United States</td>
 </tr>
 <tr>
-<td>member_only</td>
-<td>Boolean</td>
-<td>(Costco only) Whether or not the purchase must be from a Costco Member</td>
-</tr>
-<tr>
-<td>merchant_id</td>
-<td>String</td>
-<td>The merchant&rsquo;s unique identifier for the product</td>
-</tr>
-<tr>
-<td>offerlisting_id</td>
+<td>offer_id</td>
 <td>String</td>
 <td>(Amazon only). The unique identifier that identifies an item sold by any merchant on Amazon</td>
 </tr>
 <tr>
 <td>price</td>
 <td>Number</td>
-<td>The price of the item, not including shipping</td>
+<td>The price of the item, not including shipping in cents.</td>
 </tr>
 <tr>
-<td>ship_price</td>
-<td>Number</td>
-<td>The price of the shipping for the item</td>
-</tr>
-<tr>
-<td>prime</td>
+<td>marketplace_fulfilled</td>
 <td>Boolean</td>
-<td>(Amazon only). Whether or not the product ships using Amazon Prime</td>
+<td>Whether or not the product ships direct from retailer. For Amazon, this indicates if the item is shipped with Prime shipping.</td>
+</tr>
+<tr>
+<td>seller.id</td>
+<td>String</td>
+<td>The merchant&rsquo;s unique identifier for the product</td>
+</tr>
+<tr>
+<td>seller.name</td>
+<td>String</td>
+<td>The name of the seller of the current offer</td>
+</tr>
+<tr>
+<td>seller.num_ratings</td>
+<td>Number</td>
+<td>The number of ratings that the seller has accumulated</td>
+</tr>
+<tr>
+<td>seller.percent_positive</td>
+<td>Number</td>
+<td>Number between 0 and 100 denoting the percentage of positive ratings the seller has received</td>
+</tr>
+<tr>
+<td>shipping_options[].price</td>
+<td>Number</td>
+<td>The cost to ship the item in cents</td>
+</tr>
+<tr>
+<td>shipping_options[].delivery_days.min</td>
+<td>Number</td>
+<td>The minimum time in days it might take for the item to be delivered</td>
+</tr>
+<tr>
+<td>shipping_options[].delivery_days.max</td>
+<td>Number</td>
+<td>The maximum time in days it might take for the item to be delivered</td>
+</tr>
+<tr>
+<td>shipping_options[].name</td>
+<td>Number</td>
+<td>The name of the shipping option</td>
 </tr>
 <tr>
 <td>prime_only</td>
@@ -2737,19 +2681,9 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 <td>(Amazon only). Whether or not the product only ships using Amazon Prime</td>
 </tr>
 <tr>
-<td>seller_name</td>
-<td>String</td>
-<td>The name of the seller of the current offer</td>
-</tr>
-<tr>
-<td>seller_num_ratings</td>
-<td>Number</td>
-<td>The number of ratings that the seller has accumulated</td>
-</tr>
-<tr>
-<td>seller_percent_positive</td>
-<td>Number</td>
-<td>Number between 0 and 100 denoting the percentage of positive ratings the seller has received</td>
+<td>member_only</td>
+<td>Boolean</td>
+<td>(Costco only) Whether or not the purchase must be from a Costco Member</td>
 </tr>
 </tbody></table>
 
@@ -2816,7 +2750,7 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 
 <p>If there is an error processing a request, the result endpoint will return an error object containing three fields: <code class="prettyprint">code</code>, <code class="prettyprint">message</code>, and <code class="prettyprint">data</code>.</p>
 
-<p>The <code class="prettyprint">code</code> field provides a short, unique error code describing the error situation. The <code class="prettyprint">message</code> field provides a human readable message describing the error and is intended for the developer and not the end user. The <code class="prettyprint">data</code> field contains specific information related to the error (for example, the maximum quantity allowed and the desired quantity would be shown for a <code class="prettyprint">max_quantity_exceeded</code> error).</p>
+<p>The <code class="prettyprint">code</code> field provides a short, unique error code describing the error situation. The <code class="prettyprint">message</code> field provides a human readable message describing the error and is intended for the developer and not the end user. The <code class="prettyprint">data</code> field contains specific information related to the error. For example, the maximum quantity allowed and the desired quantity would be shown for a <code class="prettyprint">max_quantity_exceeded</code> error.</p>
 
 <p>The Zinc API uses the following errors:</p>
 
@@ -2832,7 +2766,7 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 </tr>
 <tr>
 <td>account_locked_verification_required</td>
-<td>The retailer emailed you a code which you must supply to continue ordering.</td>
+<td>The retailer emailed you a code which you must supply to continue ordering. <a href="#amazon-email-verification">More info</a></td>
 </tr>
 <tr>
 <td>account_login_failed</td>
@@ -3047,13 +2981,13 @@ support@zinc.io and use the code: <code class="prettyprint">other</code>.</p>
 <h3 id="i-am-receiving-an-amazon-security-code-text-asking-me-to-verify-my-identity-when-placing-the-order">I am receiving an Amazon security code text asking me to verify my identity when placing the order.</h3>
 
 <ul>
-<li>This is common when placing orders on a new account for the first time, since we are accessing Amazon from a new IP address. See our documentation about <a href="http://docs.zincapi.com/#amazon-email-verification">Amazon Email Verification</a>.</li>
+<li>This is common when placing orders on a new account for the first time, since we are accessing Amazon from a new IP address. See our documentation about <a href="#amazon-email-verification">Amazon email verification</a>.</li>
 </ul>
 
 <h3 id="my-payment-methods-are-saved-in-my-amazon-account-can-i-just-pass-zinc-the-last-4-digits-of-my-credit-card-during-checkout">My payment methods are saved in my Amazon account. Can I just pass Zinc the last 4 digits of my credit card during checkout?</h3>
 
 <ul>
-<li>You need to provide us the the full card because Amazon asks to verify it when shipping to new addresses. Alternative, you can select gift cards as your payment method (and you can use <a href="http://piranha.zinc.io">Piranha</a> to both purchase gift cards as well as automatically load them onto your Amazon 
+<li>You need to provide us the the full card because Amazon asks to verify it when shipping to new addresses. Alternative, you can select gift cards as your payment method (and you can use <a href="http://piranha.zinc.io">Piranha</a> to both purchase gift cards as well as automatically load them onto your Amazon
 accounts).</li>
 </ul>
 
@@ -3085,18 +3019,6 @@ accounts).</li>
 
 <ul>
 <li>We will retry POSTing the webhook until you return a 200 status code, so make sure you are returning a 200 at your webhook endpoint.</li>
-</ul>
-
-<h3 id="the-product-details-product-offers-api-is-taking-a-long-time-to-respond-how-do-i-speed-it-up">The Product Details/Product Offers API is taking a long time to respond. How do I speed it up?</h3>
-
-<ul>
-<li><p>Our API is optimized for throughput, not latency, and we don&rsquo;t make any latency guarantees. If you want to do a real-time call (your users wait on the results of the call) it&rsquo;s best to try these things:</p>
-
-<ul>
-<li>If your users are using a limited number of products, cache the data on your end regularly, and then display it to them from your cache in real-time when they request it.</li>
-<li>Make sure you have set the <a href="https://docs.zincapi.com/#product-details">max_age</a> parameter to the maximum value that&rsquo;s allowable for your needs.</li>
-<li>We have other techniques for speeding up the API&ndash;contact us for more details.</li>
-</ul></li>
 </ul>
 
       </div>
