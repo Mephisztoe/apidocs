@@ -281,7 +281,7 @@
 
 <p>Zinc offers an API for apps that need real-time order placing capabilities. With a single POST request, you can order an item from one of our supported retailers. Making an order request will start an order. You&rsquo;ll receive a <code class="prettyprint">request_id</code> in the POST body&rsquo;s response which you&rsquo;ll then use for <a href="#retrieving-an-order">retrieving the status of the order</a>. The following illustration shows the flow for a typical order.</p>
 
-<p><center><img alt="flow chart for making an order" src="images/ordering-flow.svg" /></center></p>
+<p><img alt="flow chart for making an order" src="images/ordering-flow.svg" /></p>
 
 <h3 id="required-attributes">Required attributes</h3>
 
@@ -484,13 +484,19 @@
 </tr>
 </tbody></table>
 
-<h2 id="selecting-shipping">Selecting shipping</h2>
+<h2 id="selecting-an-offer-amp-shipping">Selecting an offer &amp; shipping</h2>
 
-<p>Zinc provides a number of options to customize your shipping speed and cost formulas from the various options available from our supported retailers.</p>
+<p>When placing an order, each product will have multiple offers from different sellers each with their own shipping options. To address this, use a product&rsquo;s <a href="#seller-selection-criteria-object">seller selection criteria</a> to filter offers and an order&rsquo;s <a href="#shipping-object">shipping parameter</a> to specify shipping preferences. Below is an flowchart of the process used to filter offers and select a shipping option.</p>
 
-<p>Since different items will have different shipping options, you can use a product&rsquo;s <a href="#seller-selection-criteria-object">seller selection criteria</a> to specify <code class="prettyprint">handling_days_max</code>. This will filter the list of potential offers down to those that will ship within a certain number of days, which is useful when customers expect to see a tracking number within a certain amount of time. The Zinc API will then select the cheapest offer that matched all of your seller selection criteria to make a purchase. For example, if you specified <code class="prettyprint">&quot;handling_days_max&quot;: 6</code>, then any offer that won&rsquo;t ship in 6 days or less from now would be excluded from your buying selection. Thus, if two sellers are offering the same product, but one has a guaranteed shipping date 10 days away and the other seller has a guaranteed shipping date 5 days away, the second seller&rsquo;s offer would be selected. (Note: when no handling information is available, we use the longest projected arrival date of the product as the <code class="prettyprint">handling_days_max</code>)</p>
+<p><img alt="flow chart for making an order" src="images/select-offer.svg" /></p>
 
-<p>You may also use the <a href="#shipping-object">shipping parameter</a> on an order to select a shipping option once a product has been selected. Instead of filtering by the different offers, like the seller selection criteria, the <code class="prettyprint">shipping</code> parameter will choose the shipping speed on the selected offer. This is useful for ensuring the product will arrive by a specific day. For example, if you set <code class="prettyprint">&quot;max_days&quot;: 5</code> on the <code class="prettyprint">shipping</code> parameter, the Zinc API would attempt to select the cheapest shipping method that took less than 5 days to arrive. Thus, if there was a shipping method that took 3 days and cost $10 and another shipping method that took 7 days but cost $2, the first shipping option would be selected.</p>
+<h3 id="some-examples">Some examples</h3>
+
+<ul>
+<li>If you wanted to send your customer a tracking number within 5 days, you would set <code class="prettyprint">handling_days_max</code> to 5 in your <a href="#seller-selection-criteria-object">seller selection criteria</a>. The Zinc API would then filter out all offers which would not ship and upload a tracking number within 5 days.</li>
+<li>If you specified <code class="prettyprint">&quot;handling_days_max&quot;: 6</code> in your <a href="#seller-selection-criteria-object">seller selection criteria</a>, then any offer that won&rsquo;t ship in 6 days or less from now would be excluded from your buying selection. Thus, if two sellers are offering the same product, but one has a guaranteed shipping date 10 days away and the other seller has a guaranteed shipping date 5 days away, the second seller&rsquo;s offer would be selected. (Note: when no handling information is available, we use the longest projected arrival date of the product as the <code class="prettyprint">handling_days_max</code>)</li>
+<li>If you set <code class="prettyprint">&quot;max_days&quot;: 5</code> on the <a href="#shipping-object">shipping parameter</a>, the Zinc API would attempt to select the cheapest shipping method that took less than 5 days to arrive. Thus, if there was a shipping method that took 3 days and cost $10 and another shipping method that took 7 days but cost $2, the first shipping option would be selected.</li>
+</ul>
 
 <h2 id="aborting-an-order">Aborting an order</h2>
 
@@ -520,7 +526,7 @@
 </code></pre>
 
 <blockquote>
-<p>Example request processing order abort response</p>
+<p>Example abort response that is still pending</p>
 </blockquote>
 <pre class="highlight shell"><code><span class="o">{</span>
   <span class="s2">"_type"</span>: <span class="s2">"error"</span>,
@@ -532,25 +538,9 @@
 
 </code></pre>
 
-<p>The Zinc API allows you to abort uncompleted orders that are still
-in the <code class="prettyprint">request_processing</code> stage. This functionality allows you to stop an
-order from going through if a mistake was made on the order, or if the order
-is taking too long to process.</p>
+<p>The Zinc API allows you to abort orders that are still in the <code class="prettyprint">request_processing</code> stage. This functionality is intended to abort an order if was made by mistake or if it is taking too long to process.</p>
 
-<p>The response to this request will be a standard GET response for an order, which is
-either a <code class="prettyprint">request_processing</code> response, an error response, or a successful order
-response. If we are able to successfully abort the order, an <code class="prettyprint">aborted_request</code> error
-code will be returned for the order in question. If you receive back a
-<code class="prettyprint">request_processing</code> response, you will need to continue to wait before the API is
-able to abort a request on an already running process.</p>
-
-<p>If you are using the <code class="prettyprint">request_succeeded</code> and <code class="prettyprint">request_failed</code> webhooks, you won&rsquo;t
-need to do anything with the order abort response. The API will hit the
-<code class="prettyprint">request_failed</code> webhook if an order is aborted correctly, and will have normal
-behavior if the order abort fails.</p>
-
-<p>Note that abortion is best effort, so we cannot guaranteed that you will be
-able to abort a request.</p>
+<p>The response will be the same as if you were to <a href="#retrieving-an-order">GET the order</a>. If we were able to immediately abort the order, the order will have an error <strong>code</strong> of <code class="prettyprint">aborted_request</code>. It can take time for an order to abort and success is not guaranteed. You can either periodically poll the order to check if it was aborted or use webhooks.</p>
 
 <h2 id="amazon-email-verification">Amazon email verification</h2>
 
@@ -561,6 +551,7 @@ There are a few options for resolving this issue.</p>
 <ul>
 <li>Check the email associated with the account and obtain the verification code. Then resubmit your order and supply the code as <code class="prettyprint">verification_code</code> under the <a href="#retailer-credentials-object"><code class="prettyprint">retailer_credentials</code></a> object.</li>
 <li>Enable Two Factor Authentication on your account and supply the <code class="prettyprint">totp_2fa_key</code> with every order under the <a href="#retailer-credentials-object"><code class="prettyprint">retailer_credentials</code></a> object.</li>
+<li>Use <a href="#zinc-managed-accounts">Zinc Managed Accounts</a> where we manage keeping accounts open and unlocked.</li>
 </ul>
 
           <h1 id="cancellations">Cancellations</h1>
