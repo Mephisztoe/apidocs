@@ -2689,13 +2689,19 @@ regularly updated by Zinc with information about the status of the case.</p>
 <blockquote>
 <p>Example tracking object</p>
 </blockquote>
-<pre class="highlight shell"><code><span class="o">{</span>
-  <span class="s2">"merchant_order_id"</span>: <span class="s2">"112-1234567-7272727"</span>,
-  <span class="s2">"carrier"</span>: <span class="s2">"UPS"</span>,
-  <span class="s2">"tracking_number"</span>: <span class="s2">"1Z9999999999999999"</span>,
-  <span class="s2">"tracking_url"</span>: <span class="s2">"https://some-url.com/tracking-number/1Z9999999999999999"</span>,
-  <span class="s2">"product_id"</span>: <span class="s2">"0923568964"</span>
-<span class="o">}</span>
+<pre class="highlight shell"><code>    <span class="o">{</span>
+      <span class="s2">"merchant_order_id"</span>: <span class="s2">"112-111111-6553065"</span>,
+      <span class="s2">"carrier"</span>: <span class="s2">"ZNLOGIC"</span>,
+      <span class="s2">"tracking_number"</span>: <span class="s2">"ZPYAA0051111007YQ"</span>,
+      <span class="s2">"delivery_status"</span>: <span class="s2">"InTransit"</span>,
+      <span class="s2">"product_ids"</span>: <span class="o">[</span>
+        <span class="s2">"B000R31KH2"</span>
+      <span class="o">]</span>,
+      <span class="s2">"tracking_url"</span>: <span class="s2">"https://t.17track.net/en#nums=ZPYAA0051111007YQ"</span>,
+      <span class="s2">"retailer_tracking_number"</span>: <span class="s2">"TBA111189418000"</span>,
+      <span class="s2">"retailer_tracking_url"</span>: <span class="s2">"https://www.amazon.com/progress-tracker/package/ref=oh_aui_hz_st_btn?_encoding=UTF8&amp;itemId=khlnkqmn1111n&amp;orderId=112-111111-6553065"</span>,
+      <span class="s2">"obtained_at"</span>: <span class="s2">"2018-11-29T20:53:05.924Z"</span>
+    <span class="o">}</span>
 </code></pre>
 
 <table><thead>
@@ -2713,7 +2719,7 @@ regularly updated by Zinc with information about the status of the case.</p>
 <tr>
 <td>carrier</td>
 <td>String</td>
-<td>(Optional) The logistics carrier that was used to ship the package.</td>
+<td>(Optional) The logistics carrier that can track the package.</td>
 </tr>
 <tr>
 <td>tracking_number</td>
@@ -2721,14 +2727,34 @@ regularly updated by Zinc with information about the status of the case.</p>
 <td>(Optional) The tracking number from the logistics carrier.</td>
 </tr>
 <tr>
+<td>delivery_status</td>
+<td>String</td>
+<td>The current tracking status. Will be &ldquo;Delivered&rdquo; when the package is delivered.</td>
+</tr>
+<tr>
 <td>tracking_url</td>
 <td>String</td>
 <td>(Optional) The tracking url that can be used to find the carrier and tracking number for a package.</td>
 </tr>
 <tr>
-<td>product_id</td>
+<td>product_ids</td>
 <td>String</td>
-<td>(Optional) The corresponding product for which tracking was obtained.</td>
+<td>The list of product ids in the shipment. Product ids will be repeated if more than one of the product is in the shipment.</td>
+</tr>
+<tr>
+<td>retailer_tracking_number</td>
+<td>String</td>
+<td>(Amazon only) (Optional) Amazon&rsquo;s tracking numbers are not publicly trackable but are printed on the package so we include them here.</td>
+</tr>
+<tr>
+<td>retailer_tracking_url</td>
+<td>String</td>
+<td>(Optional) A url provided by the retailer than can be used to track the package</td>
+</tr>
+<tr>
+<td>obtained_at</td>
+<td>String</td>
+<td>When tracking was last updated</td>
 </tr>
 </tbody></table>
 
