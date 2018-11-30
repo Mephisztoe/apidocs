@@ -591,15 +591,13 @@ There are a few options for resolving this issue.</p>
 </code></pre>
 
 <p>The Zinc API supports pre-shipment order cancellation on Amazon.com and
-Amazon.co.uk. Simply POST to the cancellation endpoint. Note that cancelling an order
+Amazon.co.uk. Simply POST to the cancellation endpoint, <code class="prettyprint">https://api.zinc.io/v1/orders/&lt;request_id&gt;/cancel</code>. Note that cancelling an order
 occurs after an order has been successfully placed on the API. This is distinct from
-an order abort, which occurs while the order is still in progress. Cancellations
+aborting an order, which occurs while the order is still in progress. Cancellations
 will send a cancellation request to the retailer and attempt to stop the order from
 shipping and can only be initiated for order requests that were successful.</p>
 
-<p>There aren&rsquo;t any required parameters for a cancellation, so you can send an authenticated post to the cancellation URL <code class="prettyprint">&quot;https://api.zinc.io/v1/orders/&lt;request_id&gt;/cancel&quot;</code> without any extra parameters. However, cancellations can only be performed for a single merchant order id. If your order response has multiple merchant order ids, then you need to pass the <code class="prettyprint">merchant_order_id</code> parameter to the request.</p>
-
-<h3 id="optional-cancellation-attributes">Optional cancellation attributes</h3>
+<h3 id="required-attributes">Required attributes</h3>
 
 <table><thead>
 <tr>
@@ -611,18 +609,25 @@ shipping and can only be initiated for order requests that were successful.</p>
 <tr>
 <td>merchant_order_id</td>
 <td>String</td>
-<td>The merchant order id of the order that you would like to cancel. If multiple merchant order ids exist for a particular order, this parameter is required, otherwise the cancellation request will fail</td>
-</tr>
-<tr>
-<td>webhooks</td>
-<td>Object</td>
-<td>A <a href="#webhooks-object">webhooks object</a> including URLs that will receive POST requests after particular events have finished</td>
+<td>The merchant order id of the order that you would like to cancel. If the order has multiple <code class="prettyprint">merchant_order_id</code>s you must cancel each separately.</td>
 </tr>
 </tbody></table>
 
-<p>The <code class="prettyprint">request_succeeded</code> and <code class="prettyprint">request_failed</code> webhooks are optional. If supplied,
-they will be called when the corresponding event occurs on the cancellation
-request.</p>
+<h3 id="optional-cancellation-attributes">Optional cancellation attributes</h3>
+
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>webhooks</td>
+<td>Object</td>
+<td>A <a href="#webhooks-object">webhooks object</a> including URLs that will receive POST requests after <code class="prettyprint">request_succeeded</code> and <code class="prettyprint">request_failed</code></td>
+</tr>
+</tbody></table>
 
 <h2 id="retrieve-a-cancellation">Retrieve a cancellation</h2>
 
@@ -738,7 +743,7 @@ the <code class="prettyprint">attempting_to_cancel</code> state.</p>
 
 <p>The Zinc API also supports generating return labels. Returns are only available
 on the following retailers: <code class="prettyprint">amazon</code>, <code class="prettyprint">amazon_uk</code>. You can create a return for
-an order by hitting the <code class="prettyprint">https://api.zinc.io/v1/orders/&lt;request_id&gt;/return</code>
+an order by POSTING to the <code class="prettyprint">https://api.zinc.io/v1/orders/&lt;request_id&gt;/return</code>
 route where <code class="prettyprint">request_id</code> is the request id of the original order.</p>
 
 <h3 id="required-attributes">Required attributes</h3>
