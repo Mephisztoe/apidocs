@@ -1640,7 +1640,7 @@ does not exist.</p>
 <tr>
 <td>includeAddons</td>
 <td>Boolean</td>
-<td>If <code class="prettyprint">false</code> addons will not be returned in search results</td>
+<td>If <code class="prettyprint">false</code> addons will not be returned in search results.</td>
 </tr>
 </tbody></table>
 
@@ -1692,6 +1692,11 @@ does not exist.</p>
 <td>results.product_details</td>
 <td>Number</td>
 <td>Additional data about product if any was found.</td>
+</tr>
+<tr>
+<td>results.addon</td>
+<td>Boolean</td>
+<td>Will be true if the best offer (aka BuyBox) is an addon. Rarely, this field will not be returned which simply means we were unable to determine addon status in timely manner.</td>
 </tr>
 </tbody></table>
 
