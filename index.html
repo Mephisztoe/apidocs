@@ -1479,7 +1479,7 @@ does not exist.</p>
 
 <h1 id="realtime-product-data">Realtime Product Data</h1>
 
-<p>The calls documented above are tuned for throughput rather than latency and for most use cases they work well. There are some use cases (for example, catalog expansion) that have strict latency requirements. To satisfy those use cases we have developed a realtime version of our data calls. To ensure we meet our latency guarantees, we limit access to the realtime api. To get access to our realtime api contact <a href="mailto:sales@zinc.io">sales@zinc.io</a>.</p>
+<p>The calls documented above are tuned for throughput rather than latency, and for most use cases they work well. There are some use cases (for example, catalog expansion) that have strict latency requirements. To satisfy those use cases we have developed a realtime version of our data APIs. To ensure we meet our latency guarantees, we limit access to the realtime api. To get access to our realtime API, contact <a href="mailto:sales@zinc.io">sales@zinc.io</a>.</p>
 
 <h2 id="realtime-search">Realtime Search</h2>
 
@@ -1600,7 +1600,7 @@ does not exist.</p>
 
 <p><code class="prettyprint">https://api.zinc.io/v1/realtime/search?query=&lt;query&gt;&amp;retailer=&lt;retailer_name&gt;&amp;nextToken=&lt;token&gt;</code></p>
 
-<p>The first page should always return within 4 seconds and will contain 10 results. If you want to show more than 10 results, you should use AJAX to load additional pages for the best user experience. A demo of this can be found at <a href="http://amazonsearchdemo.surge.sh/">http://amazonsearchdemo.surge.sh/</a> (<a href="https://github.com/zincio/zinc-realtime-search-demo">source code</a>).</p>
+<p>The first page should always return within 4 seconds and will contain 10 results. If you want to show more than 10 results, you should use AJAX to load additional pages for the best user experience. A demo of this can be found at <a href="http://amazonsearchdemo.surge.sh/">http://amazonsearchdemo.surge.sh/</a> (<a href="https://github.com/zincio/zinc-realtime-search-demo">source code</a>). Note that you must contact <a href="mailto:sales@zinc.io">sales@zinc.io</a> first so we can enable this feature for you.</p>
 
 <h3 id="required-request-attributes">Required request attributes</h3>
 
