@@ -332,6 +332,16 @@
 <td>Object</td>
 <td>A <a href="#retailer-credentials-object">retailer credentials</a> object for logging into the retailer with a preexisting account</td>
 </tr>
+<tr>
+<td>is_gift</td>
+<td>Boolean</td>
+<td>Whether or not this order should be placed as a gift. Typically, retailers will exclude the price of the items on the receipt if this is set.</td>
+</tr>
+<tr>
+<td>max_price</td>
+<td>Number</td>
+<td>The maximum price in cents for the order. If the final price exceeds this number, the order will not go through and will return a <code class="prettyprint">max_price_exceeded</code> error.</td>
+</tr>
 </tbody></table>
 
 <h3 id="optional-attributes">Optional attributes</h3>
@@ -349,16 +359,6 @@
 <td>A message to include on the packing slip for the recipient. Must be no more than 240 characters, or 9 lines.</td>
 </tr>
 <tr>
-<td>is_gift</td>
-<td>Boolean</td>
-<td>Whether or not this order should be placed as a gift. Typically, retailers will exclude the price of the items on the receipt if this is set.</td>
-</tr>
-<tr>
-<td>max_price</td>
-<td>Number</td>
-<td>The maximum price in cents for the order. If the final price exceeds this number, the order will not go through and will return a <code class="prettyprint">max_price_exceeded</code> error.</td>
-</tr>
-<tr>
 <td>webhooks</td>
 <td>Object</td>
 <td>A <a href="#webhooks-object">webhooks object</a> including URLs that will receive POST requests after particular events have finished</td>
@@ -374,16 +374,19 @@
 <td>A list of promotion codes to use at checkout. See <a href="#promo-code-object">promo code</a> object.</td>
 </tr>
 <tr>
-<td>po_number</td>
-<td>Number</td>
-<td>(Amazon business accounts only). Adds a purchase order number to the order.</td>
+<td>strict_expired_product_id</td>
+<td>Boolean</td>
+<td>Defaults to false. If true, we will fail orderes where the product_id is &ldquo;expired&rdquo; or &ldquo;deprecated&rdquo;. If unset or false, Amazon redirects us to a valid product_id and we buy that one.</td>
 </tr>
 <tr>
-<td>affiliate_info</td>
-<td>Object</td>
-<td>(Amazon only) Add an Amazon affiliate tag to your order. Example value <code class="prettyprint">{&quot;tag&quot;: &quot;yourtag-20&quot;}</code></td>
+<td>po_number</td>
+<td>Number</td>
+<td>(Amazon business accounts only). Adds a purchase order number to</td>
 </tr>
 </tbody></table>
+
+<p>the order.
+affiliate_info | Object | (Amazon only) Add an Amazon affiliate tag to your order. Example value <code class="prettyprint">{&quot;tag&quot;: &quot;yourtag-20&quot;}</code></p>
 
 <h2 id="retrieving-an-order">Retrieving an order</h2>
 
